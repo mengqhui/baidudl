@@ -45,7 +45,7 @@ $.ajax({
 	url: "/api/list?dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page=1",
 	success: function(res){
 		var dict = {};
-		es.list.forEach(function(e){
+		res.list.forEach(function(e){
 			dict[e.fs_id] = e.path;
 		})
 
