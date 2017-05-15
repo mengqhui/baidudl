@@ -32,14 +32,20 @@ sign = b6(u(yunData.sign5, yunData.sign1));
 sign = encodeURIComponent(sign);
 
 function getURLParameter(name) {
-	return (new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.hash) || [null, ''])[1].replace(/\+/g, '%20') || null;
+	var x = location.hash.split('/');
+	var y = x[x.length-1].split('&')
+	for(var i=0; i<y.length; i++){
+		var e = y[i];
+		e = e.split('=');
+		if(e[0]==name)return e[1];
+	}
+	return null;
 }
-
 $.ajax({
 	url: "/api/list?dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page=1",
 	success: function(res){
 		var dict = {};
-		res.list.forEach(function(e){
+		es.list.forEach(function(e){
 			dict[e.fs_id] = e.path;
 		})
 

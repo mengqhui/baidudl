@@ -3,7 +3,7 @@
 
 	"name": "baidudl",
 	"description": "crack",
-	"version": "0.0.0",
+	"version": "0.0.2",
 
 	"web_accessible_resources": [
 		"content_script/core.js"
