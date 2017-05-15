@@ -1,0 +1,22 @@
+<html>
+	<head>
+		<title>baidudl</title>
+
+		<script src="/resource/angular.min.js"></script>
+		<script src="/popup/background.js"></script>
+		<script src="/popup/controller.js"></script>
+	</head>
+
+	<body>
+		<div id='app'ng-app="app" ng-csp ng-controller='control'>
+			<p ng-hide='status'>{{message}}</p>
+			<table ng-hide='!status'>
+				<tr ng-repeat="x in links">
+					<td><input type='text' value={{x.path}}></td>
+					<td><input type='text' value={{x.dlink}}></td>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>
+

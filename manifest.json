@@ -1,0 +1,32 @@
+{
+	"manifest_version": 2,
+
+	"name": "baidudl",
+	"description": "crack",
+	"version": "0.0.0",
+
+	"web_accessible_resources": [
+		"content_script/core.js"
+	],
+
+	"icons": {
+		"16": "icon/icon16.png",
+		"32": "icon/icon32.png",
+		"48": "icon/icon48.png",
+		"128": "icon/icon128.png"
+	},
+
+	"browser_action": {
+		"default_popup": "popup/popup.html",
+		"default_title"	: "Click here!"
+	},
+
+	"content_scripts": [{
+		"matches": ["https://pan.baidu.com/*"],
+		"js": ["resource/jquery.min.js"]
+	}],
+
+	"permissions": [
+		"activeTab"
+	]
+}
