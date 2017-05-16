@@ -23,7 +23,8 @@
 
 	"content_scripts": [{
 		"matches": ["https://pan.baidu.com/*"],
-		"js": ["resource/jquery.min.js"]
+		"js": ["resource/jquery.min.js"],
+		"run_at": "document_start"
 	}],
 
 	"permissions": [

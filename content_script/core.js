@@ -31,7 +31,6 @@ u = new Function("return " + yunData.sign2)()
 
 // get sign parameter
 sign = b64(u(yunData.sign5, yunData.sign1));
-sign = encodeURIComponent(sign);
 
 // get path parameter from url
 function getURLParameter(name) {
@@ -46,16 +45,19 @@ function getURLParameter(name) {
 }
 
 // retrieve download links
-$.ajax({ // list current folder
+console.log('Retrieving links');
+$.ajax({ 
 	url: "/api/list?dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page=1",
 	success: function(res){
+		console.log('links retrieved');
 		var dict = {};
 		res.list.forEach(function(e){
 			dict[e.fs_id] = e.path;
 		})
 
 		var fidlist = res.list.map(function(d){return d.fs_id})
-		$.ajax({// get download links for files in current folder
+		console.log('Passing links');
+		$.ajax({
 			type: "POST",
 			url: uri = "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
 			success: function(d){
