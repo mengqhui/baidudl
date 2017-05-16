@@ -1,18 +1,24 @@
 // initialize angular model
 var app = angular.module('app', []);
-var i;
 app.controller('control', ['$scope', function($scope){
-	$scope.message = 'Ready...';
+	$scope.message = 'Ready.';
 	$scope.status = false;
-	$scope.func = function(x){
+	
+	// function to generate high speed link
+	$scope.generate = function(i){
+		$scope.message = "Running...";
+		var x = $scope.links[i];
 		var fs_id = x.fs_id;
-		i = $scope.links.indexOf(x);
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 			chrome.tabs.sendMessage(tabs[0].id, {fs_id: fs_id}, function(response) {
-				console.log(response);
+				$scope.$apply(function(){
+					$scope.links[i].hlink = response;
+					$scope.message = "Ready.";
+				})
 			});
 		});
 	}
+
 }])
 
 // add listener to handle received download links
@@ -21,7 +27,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	if(request.type == "passLinks"){
 		$scope.$apply(function(){
 			if(request.result.feedback != 'Success'){
-				console.log(request);
 				$scope.message = 'It\'s empty!';
 			}else{
 				$scope.links = request.result.links;
@@ -36,6 +41,19 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 			$scope.links[i].hlink = hlink;
 		})
 	}
+	if(request.type == "error"){
+		$scope.$apply(function(){
+			$scope.message = request.result;
+		})
+	}
 })
 // execute content script
-chrome.tabs.executeScript({file: "content_script/inject.js"});
+chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+	chrome.tabs.sendMessage(tabs[0].id, {greeting: "yes"}, function(response) {
+		if(!response){
+			chrome.tabs.executeScript({file: "content_script/sandbox.js"});
+		}else{
+			chrome.tabs.executeScript({code: "reload_js(chrome.extension.getURL('/content_script/injection.js'))"});
+		}
+	})
+})

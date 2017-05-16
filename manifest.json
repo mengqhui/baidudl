@@ -6,7 +6,8 @@
 	"version": "0.1.0",
 
 	"web_accessible_resources": [
-		"content_script/core.js"
+		"content_script/injection_listener.js",
+		"content_script/injection.js"
 	],
 
 	"icons": {
