@@ -11,8 +11,20 @@ $.ajax({
 })
 
 // receive download links from web and send them to popup
-window.addEventListener('passMessage', function(req){
-	chrome.runtime.sendMessage({result: req.detail}, function(res){
+window.addEventListener('passLinks', function(req){
+	chrome.runtime.sendMessage({result: req.detail, type: "passLinks"}, function(res){
 		console.log(res);
 	})
+})
+
+window.addEventListener('passNewLink', function(req){
+	chrome.runtime.sendMessage({result: req.detail, type: "passNewLink"}, function(res){
+		console.log(res);
+	})
+})
+
+chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
+	var event = new CustomEvent("receiveFs", {detail: req});
+	window.dispatchEvent(event);
+	sendResponse({farewell: 'bye'});
 })

@@ -31,6 +31,7 @@ u = new Function("return " + yunData.sign2)()
 
 // get sign parameter
 sign = b64(u(yunData.sign5, yunData.sign1));
+sign = encodeURIComponent(sign);
 
 // get path parameter from url
 function getURLParameter(name) {
@@ -57,23 +58,68 @@ $.ajax({
 
 		var fidlist = res.list.map(function(d){return d.fs_id})
 		console.log('Passing links');
+		console.log("/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN);
 		$.ajax({
 			type: "POST",
-			url: uri = "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
+			url: "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
 			success: function(d){
+				console.log(d);
 				if(d.errno!=0)result = {feedback: 'Failure'}
 				else{
 					d.dlink.forEach(function(e){
 						e.path = dict[e.fs_id];
-						delete e['fs_id']
+						e.hlink = "";
 					})
 					result = {feedback: 'Success', links: d.dlink}
 				}
 
 				// send download links to content script 
-				var event = new CustomEvent("passMessage", {detail: result});
+				var event = new CustomEvent("passLinks", {detail: result});
 				window.dispatchEvent(event);
 			}
 		})
 	}
+})
+
+window.addEventListener('receiveFs', function(req){
+	var fs_id = req.detail.fs_id;
+	$.ajax({
+		type: "POST",
+		url: "/share/set?web=1&channel=chunlei&web=1&bdstoken="+yunData.MYBDSTOKEN+"&clienttype=0",
+		data: "fid_list=%5B"+fs_id+"%5D&schannel=0&channel_list=%5B%5D&period=0",
+		dataType: "json",
+		success: function(d){
+			console.log("Share success");
+			console.log(d);
+			var shareid = d.shareid;
+			var frame = $("<iframe>", {id: "test_iframe_id", src: d.shorturl, type: "hidden"})
+			$("body").append(frame)
+			$(function(){
+				$("#test_iframe_id").on('load', function(){
+					var new_yunData = this.contentWindow.yunData;
+					$.ajax({
+						type: "POST",
+						url: "/api/sharedownload?sign="+new_yunData.SIGN+"&timestamp="+new_yunData.TIMESTAMP,
+						data: "encrypt=0&product=share&uk="+new_yunData.SHARE_UK+"&primaryid="+new_yunData.SHARE_ID+"&fid_list=%5B"+new_yunData.FS_ID+"%5D",
+						dataType: "json",
+						success: function(d){
+							console.log("Link received");
+							var event = new CustomEvent("passNewLink", {detail: d.list[0].dlink});
+							window.dispatchEvent(event);
+							$.ajax({
+								type: "POST",
+								url: "/share/cancel?bdstoken="+yunData.MYBDSTOKEN+"&channel=chunlei&web=1&clienttype=0",
+								data: "shareid_list=%5B"+shareid+"%5D",
+								dataType: "json",
+								success: function(d){
+									frame.remove();
+									console.log("Unshare success");
+								}
+							})
+						}
+					});
+				})
+			})
+		}
+	});
 })
