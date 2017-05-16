@@ -5,7 +5,7 @@ app.controller('control', function($scope){
 	$scope.status = false;
 })
 
-// add listener to handle received message 
+// add listener to handle received download links
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 	$scope = angular.element(document.getElementById('app')).scope();
 	$scope.$apply(function(){

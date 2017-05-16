@@ -1,4 +1,5 @@
-function b6(t) {
+// variant base64 encoding function, copy from pan.baidu.com
+function b64(t) {
 	var e, r, a, n, o, i, s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	for (a = t.length,
 	r = 0,
@@ -28,9 +29,11 @@ function b6(t) {
 };
 u = new Function("return " + yunData.sign2)()
 
-sign = b6(u(yunData.sign5, yunData.sign1));
+// get sign parameter
+sign = b64(u(yunData.sign5, yunData.sign1));
 sign = encodeURIComponent(sign);
 
+// get path parameter from url
 function getURLParameter(name) {
 	var x = location.hash.split('/');
 	var y = x[x.length-1].split('&')
@@ -41,7 +44,9 @@ function getURLParameter(name) {
 	}
 	return null;
 }
-$.ajax({
+
+// retrieve download links
+$.ajax({ // list current folder
 	url: "/api/list?dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page=1",
 	success: function(res){
 		var dict = {};
@@ -50,7 +55,7 @@ $.ajax({
 		})
 
 		var fidlist = res.list.map(function(d){return d.fs_id})
-		$.ajax({
+		$.ajax({// get download links for files in current folder
 			type: "POST",
 			url: uri = "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
 			success: function(d){
@@ -62,6 +67,8 @@ $.ajax({
 					})
 					result = {feedback: 'Success', links: d.dlink}
 				}
+
+				// send download links to content script 
 				var event = new CustomEvent("passMessage", {detail: result});
 				window.dispatchEvent(event);
 			}
