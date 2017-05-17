@@ -3,7 +3,7 @@
 
 	"name": "baidudl",
 	"description": "crack",
-	"version": "0.2.0",
+	"version": "0.2.1",
 
 	"web_accessible_resources": [
 		"content_script/injection_listener.js",
@@ -23,7 +23,7 @@
 	},
 
 	"content_scripts": [{
-		"matches": ["https://pan.baidu.com/*"],
+		"matches": ["https://pan.baidu.com/*", "http://pan.baidu.com/*"],
 		"js": ["resource/jquery.min.js"],
 		"run_at": "document_start"
 	}],
