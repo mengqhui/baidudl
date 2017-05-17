@@ -2,8 +2,8 @@
 	"manifest_version": 2,
 
 	"name": "baidudl",
-	"description": "crack",
-	"version": "0.2.1",
+	"description": "Extract high speed download links from pan.baidu.com. Github: https://github.com/Kyle-Kyle/baidudl",
+	"version": "0.2.2",
 
 	"web_accessible_resources": [
 		"content_script/injection_listener.js",
