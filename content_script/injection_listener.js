@@ -23,54 +23,14 @@ window.addEventListener('receiveFs', function(req){
 					var code = d.match(/yunData\.setData\(.*\)/);
 					var data = code[0].substring(16, code[0].length-1);
 					var new_yunData = JSON.parse(data);
-					get_hlink(new_yunData);
+					get_hlink(new_yunData, function(link){
+						console.log("Link received");
+						var event = new CustomEvent("passNewLink", {detail: link});
+						window.dispatchEvent(event);
+						unshare(new_yunData.shareid)
+					});
 				}
 			})
 		}
 	});
 })
-
-function get_hlink(new_yunData){
-	$.ajax({
-		type: "POST",
-		url: "/api/sharedownload?sign="+new_yunData.sign+"&timestamp="+new_yunData.timestamp,
-		data: "encrypt=0&product=share&uk="+new_yunData.uk+"&primaryid="+new_yunData.shareid+"&fid_list=%5B"+new_yunData.file_list.list[0].fs_id+"%5D",
-		dataType: "json",
-		success: function(d){
-			if(d.errno != 0){
-				console.log(d);
-				var err_msg = "Warning: can't get high speed link";
-				if(d.errno == -20){
-					err_msg = "Error: your action is too frequent";
-					unshare(new_yunData.shareid);
-				}
-				var event = new CustomEvent("error", {detail: err_msg});
-				window.dispatchEvent(event);
-				return
-			}
-			console.log("Link received");
-			var event = new CustomEvent("passNewLink", {detail: d.list[0].dlink});
-			window.dispatchEvent(event);
-			unshare(new_yunData.shareid)
-		}
-	});
-}
-function unshare(shareid){
-	$.ajax({
-		type: "POST",
-		url: "/share/cancel?bdstoken="+yunData.MYBDSTOKEN+"&channel=chunlei&web=1&clienttype=0",
-		data: "shareid_list=%5B"+shareid+"%5D",
-		dataType: "json",
-		success: function(d){
-			if(d.errno != 0){
-				console.log(d);
-				var err_msg = "Warning: can't auto unshare the file";
-				var event = new CustomEvent("error", {detail: err_msg});
-				window.dispatchEvent(event);
-				return
-			}
-			console.log("Unshare success");
-		}
-	})
-}
-
