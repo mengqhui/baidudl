@@ -1,5 +1,7 @@
-console.log("Code Injected");
+var url = window.location.href
 
+if(url.match(/https?:\/\/pan\.baidu\.com\/disk\/home#list\//)){
+console.log("Code Injected");
 // variant base64 encoding function, copy from pan.baidu.com
 function b64(t) {
 	var e, r, a, n, o, i, s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -80,3 +82,80 @@ $.ajax({// list files in current folder and get their fs_id
 		})
 	}
 })
+}else if(url.match(/https?:\/\/pan\.baidu\.com\/s\//)){
+	var result = {feedback: 'Success', links: [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA"}]};
+	get_hlink2(function(link){
+		result.links[0].hlink = link;
+		var event = new CustomEvent("passLinks", {detail: result});
+		window.dispatchEvent(event);
+	});
+}else{
+	var err_msg = "home page or share page only";
+	var event = new CustomEvent("error", {detail: err_msg});
+	window.dispatchEvent(event);
+}
+
+function get_hlink(new_yunData){
+	$.ajax({
+		type: "POST",
+		url: "/api/sharedownload?sign="+new_yunData.sign+"&timestamp="+new_yunData.timestamp,
+		data: "encrypt=0&product=share&uk="+new_yunData.uk+"&primaryid="+new_yunData.shareid+"&fid_list=%5B"+new_yunData.file_list.list[0].fs_id+"%5D",
+		dataType: "json",
+		success: function(d){
+			if(d.errno != 0){
+				console.log(d);
+				var err_msg = "Warning: can't get high speed link";
+				if(d.errno == -20){
+					err_msg = "Error: your action is too frequent";
+					unshare(new_yunData.shareid);
+				}
+				var event = new CustomEvent("error", {detail: err_msg});
+				window.dispatchEvent(event);
+				return
+			}
+			console.log("Link received");
+			var event = new CustomEvent("passNewLink", {detail: d.list[0].dlink});
+			window.dispatchEvent(event);
+			unshare(new_yunData.shareid)
+		}
+	});
+}
+function get_hlink2(cb){
+	$.ajax({
+		type: "POST",
+		url: "/api/sharedownload?sign="+yunData.SIGN+"&timestamp="+yunData.TIMESTAMP,
+		data: "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID+"&fid_list=%5B"+yunData.FS_ID+"%5D",
+		dataType: "json",
+		success: function(d){
+			if(d.errno != 0){
+				console.log(d);
+				var err_msg = "Warning: can't get high speed link";
+				if(d.errno == -20){
+					err_msg = "Error: your action is too frequent";
+				}
+				var event = new CustomEvent("error", {detail: err_msg});
+				window.dispatchEvent(event);
+				return
+			}
+			cb(d.list[0].dlink);
+		}
+	});
+}
+function unshare(shareid){
+	$.ajax({
+		type: "POST",
+		url: "/share/cancel?bdstoken="+yunData.MYBDSTOKEN+"&channel=chunlei&web=1&clienttype=0",
+		data: "shareid_list=%5B"+shareid+"%5D",
+		dataType: "json",
+		success: function(d){
+			if(d.errno != 0){
+				console.log(d);
+				var err_msg = "Warning: can't auto unshare the file";
+				var event = new CustomEvent("error", {detail: err_msg});
+				window.dispatchEvent(event);
+				return
+			}
+			console.log("Unshare success");
+		}
+	})
+}

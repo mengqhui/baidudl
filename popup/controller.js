@@ -1,7 +1,7 @@
 // initialize angular model
 var app = angular.module('app', []);
 app.controller('control', ['$scope', function($scope){
-	$scope.message = 'Ready.';
+	$scope.message = 'pan.baidu.com only';
 	$scope.status = false;
 	
 	// function to generate high speed link
@@ -23,7 +23,7 @@ app.controller('control', ['$scope', function($scope){
 
 // add listener to handle received download links
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
-	$scope = angular.element(document.getElementById('app')).scope();
+	var $scope = angular.element(document.getElementById('app')).scope();
 	if(request.type == "passLinks"){
 		$scope.$apply(function(){
 			if(request.result.feedback != 'Success'){
@@ -49,11 +49,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 })
 // execute content script
 chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-	chrome.tabs.sendMessage(tabs[0].id, {greeting: "yes"}, function(response) {
-		if(!response){
-			chrome.tabs.executeScript({file: "content_script/sandbox.js"});
-		}else{
-			chrome.tabs.executeScript({code: "reload_js(chrome.extension.getURL('/content_script/injection.js'))"});
+	var url = tabs[0].url;
+	try{
+		var domain = url.match(/^[\w-]+:\/{2,}\[?([\w\.:-]+)\]?(?::[0-9]*)?/)[1];
+		console.log(domain);
+		if(domain == 'pan.baidu.com'){
+			var $scope = angular.element(document.getElementById('app')).scope();
+			$scope.$apply(function(){$scope.message = "Ready."});
+			chrome.tabs.sendMessage(tabs[0].id, {greeting: "yes"}, function(response) {
+				if(!response){
+					chrome.tabs.executeScript({file: "content_script/sandbox.js"});
+				}else{
+					chrome.tabs.executeScript({code: "reload_js(chrome.extension.getURL('/content_script/injection.js'))"});
+				}
+			})
 		}
-	})
+	}catch(err){
+		console.log(err);
+	}
 })
