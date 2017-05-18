@@ -13,6 +13,7 @@
 					<td>File name</td>
 					<td>Links</td>
 					<td>High speed links</td>
+					<td><button ng-click="generateAll()">GenerateAll</button></td>
 				</tr>
 				<tr ng-repeat="x in links">
 					<td><input type='text' value={{x.path}} ng-disabled='true'></td>

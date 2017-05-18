@@ -18,6 +18,9 @@ app.controller('control', ['$scope', function($scope){
 			});
 		});
 	}
+	$scope.generateAll = function(){
+		for(var i=0; i<$scope.links.length; i++)$scope.generate(i);
+	}
 
 }])
 
